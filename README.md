@@ -3,7 +3,7 @@
 
 AI-powered online assessment platform with secure proctoring, randomized exams, anti-cheating detection, leaderboard system, dashboard analytics, and MongoDB-based evaluation workflow.
 
-## 🚀 Features
+## Features
 
 - Secure Login Authentication
 - AI-style Proctoring System
@@ -21,7 +21,7 @@ AI-powered online assessment platform with secure proctoring, randomized exams, 
 - Malpractice Detection & Auto Flagging
 - Multi-user Architecture
 
-## 🛠 Tech Stack
+## Tech Stack
 
 Frontend:
 - HTML
@@ -35,11 +35,11 @@ Backend:
 Database:
 - MongoDB
 
-## 📌 Project Goal
+##  Project Goal
 
 This platform is designed to simulate enterprise-level online assessment systems used for recruitment, employee engagement, and large-scale evaluations.
 
-## 🚀 Future Improvements
+## Future Improvements
 
 - AI Face Detection
 - Eye Tracking
@@ -47,6 +47,6 @@ This platform is designed to simulate enterprise-level online assessment systems
 - Cloud Deployment
 - AI-Based Evaluation
 
-## 👨‍💻 Developed By
+##  Developed By
 
-Hrithika B
+Hrithika Baggam
