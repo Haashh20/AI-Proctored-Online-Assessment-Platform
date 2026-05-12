@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Soft Skills Assessment</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+
+            font-family: Arial, sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e293b,
+                    #111827
+                );
+
+            color: white;
+
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .section-container {
+
+            width: 90%;
+            max-width: 1000px;
+
+            background: rgba(255,255,255,0.08);
+
+            backdrop-filter: blur(12px);
+
+            padding: 50px;
+
+            border-radius: 25px;
+
+            box-shadow:
+                0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+
+            font-size: 42px;
+            font-weight: bold;
+
+            margin-bottom: 20px;
+
+            text-align: center;
+        }
+
+        .section-subtitle {
+
+            text-align: center;
+
+            font-size: 18px;
+
+            color: #cbd5e1;
+
+            margin-bottom: 40px;
+        }
+
+        .info-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(250px, 1fr));
+
+            gap: 20px;
+
+            margin-bottom: 40px;
+        }
+
+        .info-card {
+
+            background: rgba(255,255,255,0.08);
+
+            padding: 25px;
+
+            border-radius: 18px;
+        }
+
+        .info-card h3 {
+
+            margin-bottom: 15px;
+
+            color: #60a5fa;
+        }
+
+        .topics {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            margin-top: 10px;
+        }
+
+        .topic {
+
+            background: rgba(99,102,241,0.25);
+
+            padding: 10px 16px;
+
+            border-radius: 12px;
+
+            font-size: 14px;
+        }
+
+        .rules {
+
+            line-height: 2;
+        }
+
+        .start-btn {
+
+            width: 100%;
+
+            padding: 18px;
+
+            border: none;
+
+            border-radius: 15px;
+
+            font-size: 18px;
+            font-weight: bold;
+
+            background: linear-gradient(
+                135deg,
+                #6366f1,
+                #8b5cf6
+            );
+
+            color: white;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+
+            transform: translateY(-2px);
+
+            opacity: 0.9;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="section-container">
+
+    <div class="section-title">
+        🧠 Soft Skills Assessment
+    </div>
+
+    <div class="section-subtitle">
+        This section evaluates your communication,
+        creativity, problem-solving and critical thinking skills.
+    </div>
+
+    <div class="info-grid">
+
+        <!-- TOPICS -->
+        <div class="info-card">
+
+            <h3>📚 Topics Covered</h3>
+
+            <div class="topics">
+
+                <div class="topic">Critical Thinking</div>
+
+                <div class="topic">Problem Solving</div>
+
+                <div class="topic">Creative Imagination</div>
+
+                <div class="topic">Communication</div>
+
+            </div>
+        </div>
+
+        <!-- DETAILS -->
+        <div class="info-card">
+
+            <h3>⏱ Assessment Details</h3>
+
+            <div class="rules">
+
+                ✔ Duration: 1 Hour <br>
+
+                ✔ Randomized Questions <br>
+
+                ✔ Multiple Choice Questions <br>
+
+                ✔ Auto Submission Enabled
+            </div>
+        </div>
+
+        <!-- RULES -->
+        <div class="info-card">
+
+            <h3>🚫 Exam Rules</h3>
+
+            <div class="rules">
+
+                ✔ Camera must remain ON <br>
+
+                ✔ Microphone must remain ON <br>
+
+                ✔ Fullscreen mode mandatory <br>
+
+                ✔ Tab switching prohibited <br>
+
+                ✔ Copy/Paste prohibited
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BUTTON -->
+    <button class="start-btn"
+            onclick="startSoftSkills()">
+
+        Start Soft Skills Assessment
+
+    </button>
+
+</div>
+
+<script>
+
+function startSoftSkills() {
+
+    window.location.href =
+        "softskills-exam.html";
+}
+
+</script>
+
+</body>
+</html>

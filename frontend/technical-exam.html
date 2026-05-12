@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="exam-container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <h2>🧠 AI Proctored Online Examination</h2>
+
+        <div id="timer">
+            03:00:00
+        </div>
+    </div>
+
+<div class="section-title">
+    Technical Skills > Programming
+</div>
+
+    <!-- MAIN -->
+    <div class="main-layout">
+
+        <!-- LEFT -->
+        <div class="exam-left">
+
+            <!-- CAMERA -->
+            <div id="cameraSection" style="text-align:center; margin-bottom:20px;">
+                <video id="camera"
+                       width="220"
+                       height="160"
+                       autoplay
+                       muted>
+                </video>
+            </div>
+
+            <!-- QUESTIONS -->
+            <div id="questionBox"></div>
+
+            <!-- BUTTONS -->
+            <div class="nav-buttons"></div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="question-panel">
+            <h3>Questions</h3>
+
+            <div id="questionNumbers"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+// ================== TIMER ==================
+
+let totalTime = 2 * 60 * 60; // 2 hours
+
+function startTimer() {
+
+    const timer = document.getElementById("timer");
+
+    const interval = setInterval(() => {
+
+        let hours = Math.floor(totalTime / 3600);
+        let minutes = Math.floor((totalTime % 3600) / 60);
+        let seconds = totalTime % 60;
+
+        timer.innerText =
+            `${String(hours).padStart(2, '0')}:` +
+            `${String(minutes).padStart(2, '0')}:` +
+            `${String(seconds).padStart(2, '0')}`;
+
+        totalTime--;
+
+        // AUTO SUBMIT
+        if (totalTime < 0) {
+
+            clearInterval(interval);
+
+            alert("⏰ Time Over! Submitting exam automatically.");
+
+            submitExam();
+        }
+
+    }, 1000);
+}
+
+// ================== PREVENT REATTEMPT ==================
+
+async function checkIfAttempted() {
+
+    const username = localStorage.getItem("username");
+
+    const res = await fetch(
+        `http://localhost:5000/api/myresult/${username}`
+    );
+
+    const data = await res.json();
+
+    if (data && data.status) {
+
+        alert("You have already attempted this exam.");
+
+        window.location.href = "dashboard.html";
+    }
+}
+
+// ================== FULLSCREEN ==================
+
+function enterFullScreen() {
+
+    const elem = document.documentElement;
+
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    }
+}
+
+// ================== ANTI CHEATING ==================
+
+let warningCount = 0;
+let maxWarnings = 4;
+let examSubmitted = false;
+
+let lastViolationTime = 0;
+const cooldown = 3000;
+
+// TAB SWITCH
+document.addEventListener("visibilitychange", () => {
+
+    if (document.hidden) {
+
+        triggerViolation("Tab switch detected");
+    }
+});
+
+// FULLSCREEN EXIT
+document.addEventListener("fullscreenchange", () => {
+
+    if (!document.fullscreenElement) {
+
+        triggerViolation("Exited fullscreen");
+    }
+});
+
+// COPY / PASTE
+document.addEventListener("keydown", (e) => {
+
+    if (
+        (e.ctrlKey && e.key === "c") ||
+        (e.ctrlKey && e.key === "v")
+    ) {
+
+        e.preventDefault();
+
+        triggerViolation("Copy/Paste detected");
+    }
+});
+
+// RIGHT CLICK
+document.addEventListener("contextmenu", (e) => {
+
+    e.preventDefault();
+
+    triggerViolation("Right click disabled");
+});
+
+// VIOLATION
+function triggerViolation(reason) {
+
+    if (examSubmitted) return;
+
+    const now = Date.now();
+
+    if (now - lastViolationTime < cooldown) return;
+
+    lastViolationTime = now;
+
+    warningCount++;
+
+    alert(`⚠ Warning ${warningCount}/${maxWarnings}: ${reason}`);
+
+    if (warningCount >= maxWarnings) {
+
+        alert("🚫 Malpractice detected! Exam submitting.");
+
+        examSubmitted = true;
+
+        submitMalpractice();
+    }
+}
+
+// ================== MALPRACTICE SUBMIT ==================
+
+async function submitMalpractice() {
+
+    const username = localStorage.getItem("username") || "user";
+
+    await fetch("http://localhost:5000/api/submit", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            username,
+            score: 0,
+            answers,
+            status: "malpractice"
+        })
+    });
+
+    window.location.href = "submitted.html";
+}
+
+// ================== EXAM LOGIC ==================
+
+let questions = [];
+let currentIndex = 0;
+let answers = {};
+
+// LOAD QUESTIONS
+async function loadQuestions() {
+
+    try {
+
+        const res = await fetch("http://localhost:5000/api/questions/technical")
+        questions = await res.json();
+
+        if (!questions || questions.length === 0) {
+
+            document.getElementById("questionBox").innerHTML =
+                "No questions found";
+
+            return;
+        }
+
+        showQuestion();
+
+    } catch (error) {
+
+        console.log(error);
+    }
+}
+
+// CAMERA
+async function startCamera() {
+
+    try {
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video: true,
+                audio: true
+            });
+
+        const video = document.getElementById("camera");
+
+        video.srcObject = stream;
+
+        video.style.display = "block";
+
+        // START EXAM
+        loadQuestions();
+
+        // START TIMER
+        startTimer();
+
+    } catch (error) {
+
+        alert(
+            "Camera & microphone access is required."
+        );
+
+        document.body.innerHTML =
+            "<h2 style='text-align:center;color:white;'>Access Denied</h2>";
+    }
+}
+
+// SHOW QUESTION
+function showQuestion() {
+
+    const q = questions[currentIndex];
+
+    const container =
+        document.getElementById("questionBox");
+
+    container.innerHTML = `
+
+        <div class="question-box">
+
+            <p class="question-title">
+                ${currentIndex + 1}. ${q.question}
+            </p>
+
+            ${q.options.map(opt => `
+
+                <label class="option">
+
+                    <input type="radio"
+                           name="option"
+                           value="${opt}"
+
+                           ${answers[currentIndex] === opt
+                               ? "checked"
+                               : ""}>
+
+                    ${opt}
+
+                </label>
+
+            `).join("")}
+
+        </div>
+    `;
+
+    updateButtons();
+
+    renderQuestionPanel();
+}
+
+// CONFIRM ANSWER
+function confirmAnswer() {
+
+    const selected =
+        document.querySelector(
+            'input[name="option"]:checked'
+        );
+
+    if (!selected) {
+
+        alert("Please select an option");
+
+        return;
+    }
+
+    answers[currentIndex] = selected.value;
+
+    renderQuestionPanel();
+}
+
+// NEXT QUESTION
+function nextQuestion() {
+
+    // AUTO SAVE
+    const selected =
+        document.querySelector(
+            'input[name="option"]:checked'
+        );
+
+    if (selected) {
+
+        answers[currentIndex] = selected.value;
+    }
+
+    if (currentIndex < questions.length - 1) {
+
+        currentIndex++;
+
+        showQuestion();
+    }
+}
+
+// PREVIOUS
+function prevQuestion() {
+
+    if (currentIndex > 0) {
+
+        currentIndex--;
+
+        showQuestion();
+    }
+}
+
+// QUESTION PANEL
+function renderQuestionPanel() {
+
+    const panel =
+        document.getElementById("questionNumbers");
+
+    panel.innerHTML = "";
+
+    questions.forEach((q, index) => {
+
+        let className = "q-number";
+
+        if (index === currentIndex) {
+
+            className += " active";
+        }
+
+        else if (answers[index]) {
+
+            className += " answered";
+        }
+
+        panel.innerHTML += `
+
+            <button
+                class="${className}"
+                onclick="goToQuestion(${index})">
+
+                ${index + 1}
+
+            </button>
+        `;
+    });
+}
+
+// GO TO QUESTION
+function goToQuestion(index) {
+
+    currentIndex = index;
+
+    showQuestion();
+}
+
+// BUTTONS
+function updateButtons() {
+
+    const nav =
+        document.querySelector(".nav-buttons");
+
+    if (currentIndex === questions.length - 1) {
+
+        nav.innerHTML = `
+
+            <button onclick="prevQuestion()">
+                ⬅ Back
+            </button>
+
+            <button onclick="confirmAnswer()">
+                ✔ Confirm
+            </button>
+
+            <button onclick="submitExam()">
+                Submit Exam
+            </button>
+        `;
+    }
+
+    else {
+
+        nav.innerHTML = `
+
+            <button onclick="prevQuestion()">
+                ⬅ Back
+            </button>
+
+            <button onclick="confirmAnswer()">
+                ✔ Confirm
+            </button>
+
+            <button onclick="nextQuestion()">
+                Next ➡
+            </button>
+        `;
+    }
+}
+
+// SUBMIT
+async function submitExam() {
+
+    if (examSubmitted) return;
+
+    examSubmitted = true;
+
+    let score = 0;
+
+    questions.forEach((q, index) => {
+
+        if (answers[index] === q.answer) {
+
+            score++;
+        }
+    });
+
+    const username =
+        localStorage.getItem("username") || "user";
+
+    await fetch(
+        "http://localhost:5000/api/submit",
+        {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                username,
+                score,
+                answers
+            })
+        }
+    );
+
+    window.location.href = "submitted.html";
+}
+
+// START
+checkIfAttempted().then(() => {
+
+    enterFullScreen();
+
+    startCamera();
+});
+
+</script>
+
+</body>
+</html>

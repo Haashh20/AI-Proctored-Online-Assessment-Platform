@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="exam-container">
+    <h2> Candidate Dashboard</h2>
+
+    <p><strong>User:</strong> <span id="username"></span></p>
+    <p><strong>Status:</strong> <span id="status"></span></p>
+    
+    <p id="scoreBox" style="display:none;">
+        <strong>Score:</strong> <span id="score"></span>
+    </p>
+
+    <!-- 🔥 RANK -->
+    <p id="rankBox" style="display:none;">
+        <strong>Your Rank:</strong> <span id="rank"></span>
+    </p>
+
+    <!-- 🏆 LEADERBOARD -->
+    <div id="leaderboardSection" style="display:none;">
+        <h3>🏆 Top Performers</h3>
+        <div id="leaderboard"></div>
+    </div>
+</div>
+
+<script>
+
+// 🔹 LOAD USER DASHBOARD DATA
+async function loadDashboard() {
+    const username = localStorage.getItem("username");
+    document.getElementById("username").innerText = username;
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/myresult/${username}`);
+        const data = await res.json();
+
+        if (!data || data.message) {
+            document.getElementById("status").innerText = "Result not found";
+            return;
+        }
+
+        // 🚫 MALPRACTICE CASE (ADDED)
+        if (data.status === "malpractice") {
+            document.getElementById("status").innerText = "🚫 Malpractice Detected";
+            return;
+        }
+
+        // ⏳ BEFORE EVALUATION
+        if (data.status === "pending") {
+            document.getElementById("status").innerText = "⏳ Under Evaluation";
+        }
+
+        // ✅ AFTER EVALUATION
+        else if (data.status === "evaluated") {
+            document.getElementById("status").innerText = "✅ Evaluated";
+
+            // Show score
+            document.getElementById("scoreBox").style.display = "block";
+            document.getElementById("score").innerText = data.score + " / 10";
+
+            // 🔥 LOAD RANK
+            loadRank(username);
+
+            // 🔥 LOAD LEADERBOARD
+            loadLeaderboard();
+            document.getElementById("leaderboardSection").style.display = "block";
+        }
+
+    } catch (error) {
+        console.log("Error:", error);
+        document.getElementById("status").innerText = "Error loading data";
+    }
+}
+
+
+// 🏆 LOAD LEADERBOARD (TOP USERS)
+async function loadLeaderboard() {
+    try {
+        const res = await fetch("http://localhost:5000/api/leaderboard");
+        const data = await res.json();
+
+        const container = document.getElementById("leaderboard");
+        container.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            container.innerHTML = "<p>No leaderboard data available</p>";
+            return;
+        }
+
+        data.forEach((user, index) => {
+            container.innerHTML += `
+                <p>${index + 1}. ${user.username} - ${user.score}</p>
+            `;
+        });
+
+    } catch (error) {
+        console.log("Leaderboard error:", error);
+    }
+}
+
+
+// 🧠 LOAD USER RANK
+async function loadRank(username) {
+    try {
+        const res = await fetch(`http://localhost:5000/api/rank/${username}`);
+        const data = await res.json();
+
+        if (data && data.rank) {
+            document.getElementById("rankBox").style.display = "block";
+            document.getElementById("rank").innerText =
+                `${data.rank} out of ${data.total}`;
+        }
+    } catch (error) {
+        console.log("Rank error:", error);
+    }
+}
+
+
+// 🔹 INITIAL CALL
+loadDashboard();
+
+</script>
+
+</body>
+</html>
